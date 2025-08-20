@@ -4,7 +4,7 @@ const aiService = require("../services/ai.service");
 const pdf = require("html-pdf-node");
 
 // ---------------- PDF GENERATION ----------------
-const pdf = require('html-pdf-node');
+
 
 module.exports.downloadResumePDF = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
