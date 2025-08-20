@@ -122,7 +122,9 @@ module.exports.downloadResumePDF = async (req, res) => {
     const browser = await puppeteer.launch({
   headless: true,
   args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  executablePath: process.env.CHROME_PATH || null, // Render sets CHROME_PATH
 });
+
 
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
