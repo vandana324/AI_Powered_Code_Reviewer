@@ -6,7 +6,8 @@ const app = express();
 
 // ✅ CORS ko properly configure karo
 app.use(cors({
-  origin: ["http://localhost:5173", "https://ai-resume-generator-frontend.onrender.com"], 
+  origin: ["http://localhost:5173", "https://ai-resume-generator-frontend.onrender.com",
+    "https://ai-resume-generator04.netlify.app"], 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
