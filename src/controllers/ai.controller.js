@@ -1,9 +1,6 @@
 const aiService = require("../services/ai.service");
 const puppeteer = require("puppeteer");
 
-// ---------------- PDF GENERATION ----------------
-
-
 
 // ---------------- PDF GENERATION ----------------
 module.exports.downloadResumePDF = async (req, res) => {
@@ -123,9 +120,10 @@ module.exports.downloadResumePDF = async (req, res) => {
 
     // ✅ fix: puppeteer full + render support
     const browser = await puppeteer.launch({
-      headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+  headless: true,
+  args: ["--no-sandbox", "--disable-setuid-sandbox"],
+});
+
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
