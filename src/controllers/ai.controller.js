@@ -3,20 +3,23 @@ const puppeteer = require("puppeteer");
 
 // ---------------- PDF GENERATION ----------------
 module.exports.downloadResumePDF = async (req, res) => {
-  // CORS headers
+  // ✅ Add CORS headers for frontend
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  // ✅ Handle preflight OPTIONS request
   if (req.method === "OPTIONS") return res.sendStatus(204);
 
   try {
-    const d = req.body;
-    if (!d) return res.status(400).json({ error: "Resume data is required" });
+    const d = req.body; // resume data
+
+    if (!d) {
+      return res.status(400).json({ error: "Resume data is required" });
+    }
 
     console.log("Resume data received for PDF:", d);
 
-    // HTML content for PDF
     const htmlContent = `
       <html>
         <head>
@@ -102,6 +105,7 @@ module.exports.downloadResumePDF = async (req, res) => {
       </html>
     `;
 
+    // ✅ Puppeteer launch with Render-safe flags
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--single-process"],
@@ -114,6 +118,7 @@ module.exports.downloadResumePDF = async (req, res) => {
     const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
 
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${d.name || "resume"}.pdf"`);
     return res.end(pdfBuffer);
@@ -125,13 +130,16 @@ module.exports.downloadResumePDF = async (req, res) => {
 
 // ---------------- AI RESUME GENERATION ----------------
 module.exports.generateResume = async (req, res) => {
+  // ✅ Add CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  // ✅ Handle preflight OPTIONS request
   if (req.method === "OPTIONS") return res.sendStatus(204);
 
   const userData = req.body;
+
   if (!userData) return res.status(400).send("User data is required");
 
   const prompt = `
