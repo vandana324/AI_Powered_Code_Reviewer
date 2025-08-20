@@ -5,7 +5,7 @@ const puppeteer = require("puppeteer");
 
 
 
-
+// ---------------- PDF GENERATION ----------------
 module.exports.downloadResumePDF = async (req, res) => {
   try {
     const d = req.body; // resume data
@@ -121,13 +121,19 @@ module.exports.downloadResumePDF = async (req, res) => {
       </html>
     `;
 
-    const browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox"] });
+    // ✅ fix: puppeteer full + render support
+    const browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: "load" });
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
     const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
 
+    // ✅ fix: add CORS headers for frontend
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${d.name || "resume"}.pdf"`);
     res.end(pdfBuffer);
