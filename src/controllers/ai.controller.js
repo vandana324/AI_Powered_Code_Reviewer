@@ -1,15 +1,24 @@
 const aiService = require("../services/ai.service");
 const puppeteer = require("puppeteer");
 
-
 // ---------------- PDF GENERATION ----------------
 module.exports.downloadResumePDF = async (req, res) => {
+  // ✅ Add CORS headers for frontend
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // ✅ Handle preflight OPTIONS request
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+
   try {
     const d = req.body; // resume data
 
     if (!d) {
       return res.status(400).json({ error: "Resume data is required" });
     }
+
+    console.log("Resume data received for PDF:", d);
 
     const htmlContent = `
       <html>
@@ -38,93 +47,70 @@ module.exports.downloadResumePDF = async (req, res) => {
             </p>
           </div>
 
-          ${d.summary ? `
-            <div class="section">
-              <h2>Summary</h2>
-              <p>${d.summary}</p>
-            </div>
-          ` : ""}
+          ${d.summary ? `<div class="section"><h2>Summary</h2><p>${d.summary}</p></div>` : ""}
 
-          ${Array.isArray(d.education) && d.education.length > 0 ? `
-            <div class="section">
-              <h2>Education</h2>
-              ${d.education.map(e => `
-                <div class="item">
-                  <p class="bold">${e.institute}</p>
-                  <p>${e.degree} (${e.duration}) ${e.cgpa ? ` - CGPA: ${e.cgpa}` : ""}</p>
-                </div>
-              `).join("")}
-            </div>
-          ` : ""}
+          ${Array.isArray(d.education) && d.education.length > 0
+            ? `<div class="section"><h2>Education</h2>${d.education
+                .map(
+                  (e) =>
+                    `<div class="item"><p class="bold">${e.institute}</p><p>${e.degree} (${e.duration})${
+                      e.cgpa ? " - CGPA: " + e.cgpa : ""
+                    }</p></div>`
+                )
+                .join("")}</div>`
+            : ""}
 
-          ${d.skills ? `
-            <div class="section">
-              <h2>Skills</h2>
-              <p><span class="bold">Languages:</span> ${(d.skills.languages || []).join(", ")}</p>
-              <p><span class="bold">Frameworks:</span> ${(d.skills.frameworks || []).join(", ")}</p>
-              <p><span class="bold">Tools:</span> ${(d.skills.tools || []).join(", ")}</p>
-            </div>
-          ` : ""}
+          ${d.skills
+            ? `<div class="section"><h2>Skills</h2>
+                <p><span class="bold">Languages:</span> ${(d.skills.languages || []).join(", ")}</p>
+                <p><span class="bold">Frameworks:</span> ${(d.skills.frameworks || []).join(", ")}</p>
+                <p><span class="bold">Tools:</span> ${(d.skills.tools || []).join(", ")}</p>
+               </div>`
+            : ""}
 
-          ${Array.isArray(d.experience) && d.experience.length > 0 ? `
-            <div class="section">
-              <h2>Experience</h2>
-              ${d.experience.map(exp => `
-                <div class="item">
-                  <p class="bold">${exp.role} — ${exp.company}</p>
-                  <p>${exp.duration}</p>
-                  <p>${exp.description}</p>
-                </div>
-              `).join("")}
-            </div>
-          ` : ""}
+          ${Array.isArray(d.experience) && d.experience.length > 0
+            ? `<div class="section"><h2>Experience</h2>${d.experience
+                .map(
+                  (exp) =>
+                    `<div class="item"><p class="bold">${exp.role} — ${exp.company}</p><p>${exp.duration}</p><p>${exp.description}</p></div>`
+                )
+                .join("")}</div>`
+            : ""}
 
-          ${Array.isArray(d.projects) && d.projects.length > 0 ? `
-            <div class="section">
-              <h2>Projects</h2>
-              ${d.projects.map(p => `
-                <div class="item">
-                  <p class="bold">${p.title}</p>
-                  <p>${p.description}</p>
-                  ${p.github ? `<a href="${p.github}">GitHub</a>` : ""} 
-                  ${p.live ? ` | <a href="${p.live}">Live</a>` : ""}
-                </div>
-              `).join("")}
-            </div>
-          ` : ""}
+          ${Array.isArray(d.projects) && d.projects.length > 0
+            ? `<div class="section"><h2>Projects</h2>${d.projects
+                .map(
+                  (p) =>
+                    `<div class="item"><p class="bold">${p.title}</p><p>${p.description}</p>${
+                      p.github ? `<a href="${p.github}">GitHub</a>` : ""
+                    } ${p.live ? ` | <a href="${p.live}">Live</a>` : ""}</div>`
+                )
+                .join("")}</div>`
+            : ""}
 
-          ${Array.isArray(d.certifications) && d.certifications.filter(c => c.title && c.authority).length > 0 ? `
-            <div class="section">
-              <h2>Certifications</h2>
-              <ul>
-                ${d.certifications.filter(c => c.title && c.authority).map(c => `
-                  <li><span class="bold">${c.title}</span> — ${c.authority} ${c.date ? `(${c.date})` : ""}</li>
-                `).join("")}
-              </ul>
-            </div>
-          ` : ""}
+          ${Array.isArray(d.certifications) && d.certifications.filter((c) => c.title && c.authority).length > 0
+            ? `<div class="section"><h2>Certifications</h2><ul>${d.certifications
+                .filter((c) => c.title && c.authority)
+                .map((c) => `<li><span class="bold">${c.title}</span> — ${c.authority}${c.date ? ` (${c.date})` : ""}</li>`)
+                .join("")}</ul></div>`
+            : ""}
 
-          ${Array.isArray(d.awards) && d.awards.filter(a => a.title && a.issuer).length > 0 ? `
-            <div class="section">
-              <h2>Awards & Achievements</h2>
-              <ul>
-                ${d.awards.filter(a => a.title && a.issuer).map(a => `
-                  <li><span class="bold">${a.title}</span> — ${a.issuer} ${a.year ? `(${a.year})` : ""}</li>
-                `).join("")}
-              </ul>
-            </div>
-          ` : ""}
+          ${Array.isArray(d.awards) && d.awards.filter((a) => a.title && a.issuer).length > 0
+            ? `<div class="section"><h2>Awards & Achievements</h2><ul>${d.awards
+                .filter((a) => a.title && a.issuer)
+                .map((a) => `<li><span class="bold">${a.title}</span> — ${a.issuer}${a.year ? ` (${a.year})` : ""}</li>`)
+                .join("")}</ul></div>`
+            : ""}
         </body>
       </html>
     `;
 
-    // ✅ fix: puppeteer full + render support
+    // ✅ Puppeteer launch with Render-safe flags
     const browser = await puppeteer.launch({
-  headless: true,
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  executablePath: process.env.CHROME_PATH || null, // Render sets CHROME_PATH
-});
-
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--single-process"],
+      executablePath: process.env.CHROME_PATH || undefined,
+    });
 
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
@@ -132,35 +118,29 @@ module.exports.downloadResumePDF = async (req, res) => {
     const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
 
-    // ✅ fix: add CORS headers for frontend
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${d.name || "resume"}.pdf"`);
-    res.end(pdfBuffer);
+    return res.end(pdfBuffer);
   } catch (err) {
     console.error("❌ PDF Generation Failed:", err);
-    res.status(500).send("Failed to generate PDF");
+    return res.status(500).send("Failed to generate PDF");
   }
 };
 
-
 // ---------------- AI RESUME GENERATION ----------------
 module.exports.generateResume = async (req, res) => {
-  // ✅ Add CORS headers for frontend
-  res.setHeader("Access-Control-Allow-Origin", "*"); // allow all origins (you can restrict later)
+  // ✅ Add CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   // ✅ Handle preflight OPTIONS request
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
+  if (req.method === "OPTIONS") return res.sendStatus(204);
 
   const userData = req.body;
 
-  if (!userData) {
-    return res.status(400).send("User data is required");
-  }
+  if (!userData) return res.status(400).send("User data is required");
 
   const prompt = `
     The user provided raw resume data (possibly Hindi + English mix).
@@ -171,13 +151,10 @@ module.exports.generateResume = async (req, res) => {
   `;
 
   try {
-    // Call your AI service
     const response = await aiService.generateResume(prompt);
-
-    // Send the AI-generated resume
-    res.json({ resume: response });
+    return res.json({ resume: response });
   } catch (err) {
     console.error("❌ AI Resume Generation Failed:", err);
-    res.status(500).json({ error: "Resume generation failed", details: err.message });
+    return res.status(500).json({ error: "Resume generation failed", details: err.message });
   }
 };
