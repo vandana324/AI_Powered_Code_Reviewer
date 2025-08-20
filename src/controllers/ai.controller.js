@@ -144,6 +144,16 @@ module.exports.downloadResumePDF = async (req, res) => {
 
 // ---------------- AI RESUME GENERATION ----------------
 module.exports.generateResume = async (req, res) => {
+  // ✅ Add CORS headers for frontend
+  res.setHeader("Access-Control-Allow-Origin", "*"); // allow all origins (you can restrict later)
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // ✅ Handle preflight OPTIONS request
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
   const userData = req.body;
 
   if (!userData) {
@@ -159,9 +169,13 @@ module.exports.generateResume = async (req, res) => {
   `;
 
   try {
+    // Call your AI service
     const response = await aiService.generateResume(prompt);
+
+    // Send the AI-generated resume
     res.json({ resume: response });
   } catch (err) {
+    console.error("❌ AI Resume Generation Failed:", err);
     res.status(500).json({ error: "Resume generation failed", details: err.message });
   }
 };
