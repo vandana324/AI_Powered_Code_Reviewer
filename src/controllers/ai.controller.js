@@ -4,135 +4,17 @@ const aiService = require("../services/ai.service");
 const pdf = require("html-pdf-node");
 
 // ---------------- PDF GENERATION ----------------
-// module.exports.downloadResumePDF = async (req, res) => {
-//   // ✅ Add CORS headers for frontend
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-//   // ✅ Handle preflight OPTIONS request
-//   if (req.method === "OPTIONS") return res.sendStatus(204);
-
-//   try {
-//     const d = req.body; // resume data
-//     if (!d) return res.status(400).json({ error: "Resume data is required" });
-
-//     console.log("Resume data received for PDF:", d);
-
-//     const htmlContent = `
-//       <html>
-//         <head>
-//           <style>
-//             body { font-family: Arial, sans-serif; margin: 40px; font-size: 12px; line-height: 1.4; }
-//             h1 { text-align: center; margin-bottom: 5px; }
-//             p { margin: 2px 0; }
-//             .header { text-align: center; margin-bottom: 20px; }
-//             .section { margin-bottom: 12px; }
-//             .section h2 { border-bottom: 1px solid #ccc; font-size: 14px; margin-bottom: 4px; }
-//             .item { margin-bottom: 6px; }
-//             .bold { font-weight: bold; }
-//           </style>
-//         </head>
-//         <body>
-//           <div class="header">
-//             <h1>${d.name || ""}</h1>
-//             <p>${d.email || ""} | ${d.phone || ""} ${d.location ? " | " + d.location : ""}</p>
-//             <p>
-//               ${d.links?.github ? `<a href="${d.links.github}">GitHub</a> | ` : ""}
-//               ${d.links?.linkedin ? `<a href="${d.links.linkedin}">LinkedIn</a> | ` : ""}
-//               ${d.links?.portfolio ? `<a href="${d.links.portfolio}">Portfolio</a> | ` : ""}
-//               ${d.links?.leetcode ? `<a href="${d.links.leetcode}">LeetCode</a> | ` : ""}
-//               ${d.links?.gfg ? `<a href="${d.links.gfg}">GFG</a>` : ""}
-//             </p>
-//           </div>
-
-//           ${d.summary ? `<div class="section"><h2>Summary</h2><p>${d.summary}</p></div>` : ""}
-
-//           ${Array.isArray(d.education) && d.education.length > 0
-//             ? `<div class="section"><h2>Education</h2>${d.education
-//                 .map(
-//                   (e) =>
-//                     `<div class="item"><p class="bold">${e.institute}</p><p>${e.degree} (${e.duration})${
-//                       e.cgpa ? " - CGPA: " + e.cgpa : ""
-//                     }</p></div>`
-//                 )
-//                 .join("")}</div>`
-//             : ""}
-
-//           ${d.skills
-//             ? `<div class="section"><h2>Skills</h2>
-//                 <p><span class="bold">Languages:</span> ${(d.skills.languages || []).join(", ")}</p>
-//                 <p><span class="bold">Frameworks:</span> ${(d.skills.frameworks || []).join(", ")}</p>
-//                 <p><span class="bold">Tools:</span> ${(d.skills.tools || []).join(", ")}</p>
-//                </div>`
-//             : ""}
-
-//           ${Array.isArray(d.experience) && d.experience.length > 0
-//             ? `<div class="section"><h2>Experience</h2>${d.experience
-//                 .map(
-//                   (exp) =>
-//                     `<div class="item"><p class="bold">${exp.role} — ${exp.company}</p><p>${exp.duration}</p><p>${exp.description}</p></div>`
-//                 )
-//                 .join("")}</div>`
-//             : ""}
-
-//           ${Array.isArray(d.projects) && d.projects.length > 0
-//             ? `<div class="section"><h2>Projects</h2>${d.projects
-//                 .map(
-//                   (p) =>
-//                     `<div class="item"><p class="bold">${p.title}</p><p>${p.description}</p>${
-//                       p.github ? `<a href="${p.github}">GitHub</a>` : ""
-//                     } ${p.live ? ` | <a href="${p.live}">Live</a>` : ""}</div>`
-//                 )
-//                 .join("")}</div>`
-//             : ""}
-
-//           ${Array.isArray(d.certifications) && d.certifications.filter((c) => c.title && c.authority).length > 0
-//             ? `<div class="section"><h2>Certifications</h2><ul>${d.certifications
-//                 .filter((c) => c.title && c.authority)
-//                 .map((c) => `<li><span class="bold">${c.title}</span> — ${c.authority}${c.date ? ` (${c.date})` : ""}</li>`)
-//                 .join("")}</ul></div>`
-//             : ""}
-
-//           ${Array.isArray(d.awards) && d.awards.filter((a) => a.title && a.issuer).length > 0
-//             ? `<div class="section"><h2>Awards & Achievements</h2><ul>${d.awards
-//                 .filter((a) => a.title && a.issuer)
-//                 .map((a) => `<li><span class="bold">${a.title}</span> — ${a.issuer}${a.year ? ` (${a.year})` : ""}</li>`)
-//                 .join("")}</ul></div>`
-//             : ""}
-
-//         </body>
-//       </html>
-//     `;
-
-//     // ✅ Generate PDF using html-pdf-node
-//     let file = { content: htmlContent };
-//     const options = { format: "A4" };
-
-//     const pdfBuffer = await pdf.generatePdf(file, options);
-
-//     res.setHeader("Content-Type", "application/pdf");
-//     res.setHeader("Content-Disposition", `attachment; filename="${d.name || "resume"}.pdf"`);
-//     return res.end(pdfBuffer);
-//   } catch (err) {
-//     console.error("❌ PDF Generation Failed:", err);
-//     return res.status(500).send("Failed to generate PDF");
-//   }
-// };
-
-
-
-
-
 module.exports.downloadResumePDF = async (req, res) => {
+  // ✅ Add CORS headers for frontend
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  // ✅ Handle preflight OPTIONS request
   if (req.method === "OPTIONS") return res.sendStatus(204);
 
   try {
-    const d = req.body;
+    const d = req.body; // resume data
     if (!d) return res.status(400).json({ error: "Resume data is required" });
 
     console.log("Resume data received for PDF:", d);
@@ -141,90 +23,208 @@ module.exports.downloadResumePDF = async (req, res) => {
       <html>
         <head>
           <style>
-            body { font-family: Arial, sans-serif; margin: 30px; font-size: 13px; line-height: 1.5; color: #111; }
-            h1 { text-align: center; margin-bottom: 5px; font-weight: 600; }
+            body { font-family: Arial, sans-serif; margin: 40px; font-size: 12px; line-height: 1.4; }
+            h1 { text-align: center; margin-bottom: 5px; }
             p { margin: 2px 0; }
-            a { color: #1d4ed8; text-decoration: none; }
-            .header { text-align: center; margin-bottom: 15px; }
-            .links { display: flex; justify-content: center; gap: 10px; font-size: 11px; }
+            .header { text-align: center; margin-bottom: 20px; }
             .section { margin-bottom: 12px; }
-            .section h2 { border-bottom: 1px solid #ccc; font-size: 14px; margin-bottom: 4px; font-weight: 600; }
+            .section h2 { border-bottom: 1px solid #ccc; font-size: 14px; margin-bottom: 4px; }
             .item { margin-bottom: 6px; }
-            .bold { font-weight: 500; }
-            .project { display: flex; justify-content: space-between; }
-            .project-links { font-size: 11px; }
-            ul { padding-left: 20px; margin: 4px 0; }
+            .bold { font-weight: bold; }
           </style>
         </head>
         <body>
           <div class="header">
             <h1>${d.name || ""}</h1>
             <p>${d.email || ""} | ${d.phone || ""} ${d.location ? " | " + d.location : ""}</p>
-            <div class="links">
-              ${d.links?.github ? `<a href="${d.links.github}">GitHub</a>` : ""}
-              ${d.links?.linkedin ? `<a href="${d.links.linkedin}">LinkedIn</a>` : ""}
-              ${d.links?.portfolio ? `<a href="${d.links.portfolio}">Portfolio</a>` : ""}
-              ${d.links?.leetcode ? `<a href="${d.links.leetcode}">LeetCode</a>` : ""}
+            <p>
+              ${d.links?.github ? `<a href="${d.links.github}">GitHub</a> | ` : ""}
+              ${d.links?.linkedin ? `<a href="${d.links.linkedin}">LinkedIn</a> | ` : ""}
+              ${d.links?.portfolio ? `<a href="${d.links.portfolio}">Portfolio</a> | ` : ""}
+              ${d.links?.leetcode ? `<a href="${d.links.leetcode}">LeetCode</a> | ` : ""}
               ${d.links?.gfg ? `<a href="${d.links.gfg}">GFG</a>` : ""}
-            </div>
+            </p>
           </div>
 
           ${d.summary ? `<div class="section"><h2>Summary</h2><p>${d.summary}</p></div>` : ""}
 
           ${Array.isArray(d.education) && d.education.length > 0
-            ? `<div class="section"><h2>Education</h2>${d.education.map(e => 
-                `<div class="item"><p class="bold">${e.institute}</p><p>${e.degree} (${e.duration})${e.cgpa ? " — CGPA: "+e.cgpa : ""}</p></div>`
-              ).join("")}</div>`
+            ? `<div class="section"><h2>Education</h2>${d.education
+                .map(
+                  (e) =>
+                    `<div class="item"><p class="bold">${e.institute}</p><p>${e.degree} (${e.duration})${
+                      e.cgpa ? " - CGPA: " + e.cgpa : ""
+                    }</p></div>`
+                )
+                .join("")}</div>`
             : ""}
 
-          ${d.skills ? `<div class="section"><h2>Skills</h2>
-            <p><span class="bold">Languages:</span> ${(d.skills.languages || []).join(", ")}</p>
-            <p><span class="bold">Frameworks:</span> ${(d.skills.frameworks || []).join(", ")}</p>
-            <p><span class="bold">Tools:</span> ${(d.skills.tools || []).join(", ")}</p>
-          </div>` : ""}
+          ${d.skills
+            ? `<div class="section"><h2>Skills</h2>
+                <p><span class="bold">Languages:</span> ${(d.skills.languages || []).join(", ")}</p>
+                <p><span class="bold">Frameworks:</span> ${(d.skills.frameworks || []).join(", ")}</p>
+                <p><span class="bold">Tools:</span> ${(d.skills.tools || []).join(", ")}</p>
+               </div>`
+            : ""}
 
           ${Array.isArray(d.experience) && d.experience.length > 0
-            ? `<div class="section"><h2>Experience</h2>${d.experience.map(exp =>
-                `<div class="item"><p class="bold">${exp.role} — ${exp.company}</p><p>${exp.duration}</p><p>${exp.description}</p></div>`
-              ).join("")}</div>` : ""}
+            ? `<div class="section"><h2>Experience</h2>${d.experience
+                .map(
+                  (exp) =>
+                    `<div class="item"><p class="bold">${exp.role} — ${exp.company}</p><p>${exp.duration}</p><p>${exp.description}</p></div>`
+                )
+                .join("")}</div>`
+            : ""}
 
           ${Array.isArray(d.projects) && d.projects.length > 0
-            ? `<div class="section"><h2>Projects</h2>${d.projects.map(p =>
-                `<div class="project"><div><p class="bold">${p.title}</p><p>${p.description}</p></div>
-                 <div class="project-links">${p.github ? `<a href="${p.github}">GitHub</a>` : ""}${p.live ? ` | <a href="${p.live}">Live</a>` : ""}</div>
-                </div>`
-              ).join("")}</div>` : ""}
+            ? `<div class="section"><h2>Projects</h2>${d.projects
+                .map(
+                  (p) =>
+                    `<div class="item"><p class="bold">${p.title}</p><p>${p.description}</p>${
+                      p.github ? `<a href="${p.github}">GitHub</a>` : ""
+                    } ${p.live ? ` | <a href="${p.live}">Live</a>` : ""}</div>`
+                )
+                .join("")}</div>`
+            : ""}
 
-          ${Array.isArray(d.certifications) && d.certifications.filter(c => c.title && c.authority).length > 0
+          ${Array.isArray(d.certifications) && d.certifications.filter((c) => c.title && c.authority).length > 0
             ? `<div class="section"><h2>Certifications</h2><ul>${d.certifications
-                .filter(c => c.title && c.authority)
-                .map(c => `<li><span class="bold">${c.title}</span> — ${c.authority}${c.date ? ` (${c.date})` : ""}</li>`)
-                .join("")}</ul></div>` : ""}
+                .filter((c) => c.title && c.authority)
+                .map((c) => `<li><span class="bold">${c.title}</span> — ${c.authority}${c.date ? ` (${c.date})` : ""}</li>`)
+                .join("")}</ul></div>`
+            : ""}
 
-          ${Array.isArray(d.awards) && d.awards.filter(a => a.title && a.issuer).length > 0
+          ${Array.isArray(d.awards) && d.awards.filter((a) => a.title && a.issuer).length > 0
             ? `<div class="section"><h2>Awards & Achievements</h2><ul>${d.awards
-                .filter(a => a.title && a.issuer)
-                .map(a => `<li><span class="bold">${a.title}</span> — ${a.issuer}${a.year ? ` (${a.year})` : ""}</li>`)
-                .join("")}</ul></div>` : ""}
+                .filter((a) => a.title && a.issuer)
+                .map((a) => `<li><span class="bold">${a.title}</span> — ${a.issuer}${a.year ? ` (${a.year})` : ""}</li>`)
+                .join("")}</ul></div>`
+            : ""}
 
         </body>
       </html>
     `;
 
-    const file = { content: htmlContent };
-    const options = { format: "A4", printBackground: true };
+    // ✅ Generate PDF using html-pdf-node
+    let file = { content: htmlContent };
+    const options = { format: "A4" };
 
     const pdfBuffer = await pdf.generatePdf(file, options);
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${d.name || "resume"}.pdf"`);
     return res.end(pdfBuffer);
-
   } catch (err) {
     console.error("❌ PDF Generation Failed:", err);
     return res.status(500).send("Failed to generate PDF");
   }
 };
+
+
+
+
+
+// module.exports.downloadResumePDF = async (req, res) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+//   if (req.method === "OPTIONS") return res.sendStatus(204);
+
+//   try {
+//     const d = req.body;
+//     if (!d) return res.status(400).json({ error: "Resume data is required" });
+
+//     console.log("Resume data received for PDF:", d);
+
+//     const htmlContent = `
+//       <html>
+//         <head>
+//           <style>
+//             body { font-family: Arial, sans-serif; margin: 30px; font-size: 13px; line-height: 1.5; color: #111; }
+//             h1 { text-align: center; margin-bottom: 5px; font-weight: 600; }
+//             p { margin: 2px 0; }
+//             a { color: #1d4ed8; text-decoration: none; }
+//             .header { text-align: center; margin-bottom: 15px; }
+//             .links { display: flex; justify-content: center; gap: 10px; font-size: 11px; }
+//             .section { margin-bottom: 12px; }
+//             .section h2 { border-bottom: 1px solid #ccc; font-size: 14px; margin-bottom: 4px; font-weight: 600; }
+//             .item { margin-bottom: 6px; }
+//             .bold { font-weight: 500; }
+//             .project { display: flex; justify-content: space-between; }
+//             .project-links { font-size: 11px; }
+//             ul { padding-left: 20px; margin: 4px 0; }
+//           </style>
+//         </head>
+//         <body>
+//           <div class="header">
+//             <h1>${d.name || ""}</h1>
+//             <p>${d.email || ""} | ${d.phone || ""} ${d.location ? " | " + d.location : ""}</p>
+//             <div class="links">
+//               ${d.links?.github ? `<a href="${d.links.github}">GitHub</a>` : ""}
+//               ${d.links?.linkedin ? `<a href="${d.links.linkedin}">LinkedIn</a>` : ""}
+//               ${d.links?.portfolio ? `<a href="${d.links.portfolio}">Portfolio</a>` : ""}
+//               ${d.links?.leetcode ? `<a href="${d.links.leetcode}">LeetCode</a>` : ""}
+//               ${d.links?.gfg ? `<a href="${d.links.gfg}">GFG</a>` : ""}
+//             </div>
+//           </div>
+
+//           ${d.summary ? `<div class="section"><h2>Summary</h2><p>${d.summary}</p></div>` : ""}
+
+//           ${Array.isArray(d.education) && d.education.length > 0
+//             ? `<div class="section"><h2>Education</h2>${d.education.map(e => 
+//                 `<div class="item"><p class="bold">${e.institute}</p><p>${e.degree} (${e.duration})${e.cgpa ? " — CGPA: "+e.cgpa : ""}</p></div>`
+//               ).join("")}</div>`
+//             : ""}
+
+//           ${d.skills ? `<div class="section"><h2>Skills</h2>
+//             <p><span class="bold">Languages:</span> ${(d.skills.languages || []).join(", ")}</p>
+//             <p><span class="bold">Frameworks:</span> ${(d.skills.frameworks || []).join(", ")}</p>
+//             <p><span class="bold">Tools:</span> ${(d.skills.tools || []).join(", ")}</p>
+//           </div>` : ""}
+
+//           ${Array.isArray(d.experience) && d.experience.length > 0
+//             ? `<div class="section"><h2>Experience</h2>${d.experience.map(exp =>
+//                 `<div class="item"><p class="bold">${exp.role} — ${exp.company}</p><p>${exp.duration}</p><p>${exp.description}</p></div>`
+//               ).join("")}</div>` : ""}
+
+//           ${Array.isArray(d.projects) && d.projects.length > 0
+//             ? `<div class="section"><h2>Projects</h2>${d.projects.map(p =>
+//                 `<div class="project"><div><p class="bold">${p.title}</p><p>${p.description}</p></div>
+//                  <div class="project-links">${p.github ? `<a href="${p.github}">GitHub</a>` : ""}${p.live ? ` | <a href="${p.live}">Live</a>` : ""}</div>
+//                 </div>`
+//               ).join("")}</div>` : ""}
+
+//           ${Array.isArray(d.certifications) && d.certifications.filter(c => c.title && c.authority).length > 0
+//             ? `<div class="section"><h2>Certifications</h2><ul>${d.certifications
+//                 .filter(c => c.title && c.authority)
+//                 .map(c => `<li><span class="bold">${c.title}</span> — ${c.authority}${c.date ? ` (${c.date})` : ""}</li>`)
+//                 .join("")}</ul></div>` : ""}
+
+//           ${Array.isArray(d.awards) && d.awards.filter(a => a.title && a.issuer).length > 0
+//             ? `<div class="section"><h2>Awards & Achievements</h2><ul>${d.awards
+//                 .filter(a => a.title && a.issuer)
+//                 .map(a => `<li><span class="bold">${a.title}</span> — ${a.issuer}${a.year ? ` (${a.year})` : ""}</li>`)
+//                 .join("")}</ul></div>` : ""}
+
+//         </body>
+//       </html>
+//     `;
+
+//     const file = { content: htmlContent };
+//     const options = { format: "A4", printBackground: true };
+
+//     const pdfBuffer = await pdf.generatePdf(file, options);
+
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader("Content-Disposition", `attachment; filename="${d.name || "resume"}.pdf"`);
+//     return res.end(pdfBuffer);
+
+//   } catch (err) {
+//     console.error("❌ PDF Generation Failed:", err);
+//     return res.status(500).send("Failed to generate PDF");
+//   }
+// };
 
 
 // ---------------- AI RESUME GENERATION ----------------
