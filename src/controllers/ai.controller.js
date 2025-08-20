@@ -1,6 +1,8 @@
 const aiService = require("../services/ai.service");
 const puppeteer = require("puppeteer");
 
+const pdf = require("html-pdf-node");
+
 // ---------------- PDF GENERATION ----------------
 module.exports.downloadResumePDF = async (req, res) => {
   // ✅ Add CORS headers for frontend
@@ -13,10 +15,7 @@ module.exports.downloadResumePDF = async (req, res) => {
 
   try {
     const d = req.body; // resume data
-
-    if (!d) {
-      return res.status(400).json({ error: "Resume data is required" });
-    }
+    if (!d) return res.status(400).json({ error: "Resume data is required" });
 
     console.log("Resume data received for PDF:", d);
 
@@ -101,24 +100,17 @@ module.exports.downloadResumePDF = async (req, res) => {
                 .map((a) => `<li><span class="bold">${a.title}</span> — ${a.issuer}${a.year ? ` (${a.year})` : ""}</li>`)
                 .join("")}</ul></div>`
             : ""}
+
         </body>
       </html>
     `;
 
-    // ✅ Puppeteer launch with Render-safe flags
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--single-process"],
-      executablePath: process.env.CHROME_PATH || undefined,
-    });
+    // ✅ Generate PDF using html-pdf-node
+    let file = { content: htmlContent };
+    const options = { format: "A4" };
 
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    const pdfBuffer = await pdf.generatePdf(file, options);
 
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
-    await browser.close();
-
-    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${d.name || "resume"}.pdf"`);
     return res.end(pdfBuffer);
@@ -127,6 +119,7 @@ module.exports.downloadResumePDF = async (req, res) => {
     return res.status(500).send("Failed to generate PDF");
   }
 };
+
 
 // ---------------- AI RESUME GENERATION ----------------
 module.exports.generateResume = async (req, res) => {
